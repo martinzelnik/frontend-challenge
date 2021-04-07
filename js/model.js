@@ -5,10 +5,12 @@
 	 * Creates a new Model instance and hooks up the storage.
 	 *
 	 * @constructor
-	 * @param {object} storage A reference to the client side storage class
+	 * @param {object} taskStorage A reference to the client side task storage class
+	 * @param {object} categoryStorage A reference to the client side category storage class
 	 */
-	function Model(storage) {
-		this.storage = storage;
+	function Model(taskStorage, categoryStorage) {
+		this.taskStorage = taskStorage;
+		this.categoryStorage = categoryStorage;
 	}
 
 	/**
@@ -17,7 +19,7 @@
 	 * @param {string} [title] The title of the task
 	 * @param {function} [callback] The callback to fire after the model is created
 	 */
-	Model.prototype.create = function (title, callback) {
+	 Model.prototype.create = function (title, callback) {
 		title = title || '';
 		callback = callback || function () {};
 
@@ -26,7 +28,7 @@
 			completed: false
 		};
 
-		this.storage.save(newItem, callback);
+		self.taskStorage.save(newItem, callback);
 	};
 
 	/**
@@ -50,12 +52,12 @@
 
 		if (queryType === 'function') {
 			callback = query;
-			return this.storage.findAll(callback);
+			return this.taskStorage.findAll(callback);
 		} else if (queryType === 'string' || queryType === 'number') {
 			query = parseInt(query, 10);
-			this.storage.find({ id: query }, callback);
+			this.taskStorage.find({ id: query }, callback);
 		} else {
-			this.storage.find(query, callback);
+			this.taskStorage.find(query, callback);
 		}
 	};
 
@@ -68,7 +70,7 @@
 	 * @param {function} callback The callback to fire when the update is complete.
 	 */
 	Model.prototype.update = function (id, data, callback) {
-		this.storage.save(data, callback, id);
+		this.taskStorage.save(data, callback, id);
 	};
 
 	/**
@@ -78,7 +80,7 @@
 	 * @param {function} callback The callback to fire when the removal is complete.
 	 */
 	Model.prototype.remove = function (id, callback) {
-		this.storage.remove(id, callback);
+		this.taskStorage.remove(id, callback);
 	};
 
 	/**
@@ -87,7 +89,7 @@
 	 * @param {function} callback The callback to fire when the storage is wiped.
 	 */
 	Model.prototype.removeAll = function (callback) {
-		this.storage.drop(callback);
+		this.taskStorage.drop(callback);
 	};
 
 	/**
@@ -100,7 +102,7 @@
 			total: 0
 		};
 
-		this.storage.findAll(function (data) {
+		this.taskStorage.findAll(function (data) {
 			data.forEach(function (todo) {
 				if (todo.completed) {
 					todos.completed++;

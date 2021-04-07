@@ -8,8 +8,9 @@
 	 * @param {string} name The name of your new to do list.
 	 */
 	function Todo(name) {
-		this.storage = new app.Store(name);
-		this.model = new app.Model(this.storage);
+		this.taskStorage = new app.Store(name + '-tasks');
+		this.categotyStorage = new app.Store(name + '-categories');
+		this.model = new app.Model(this.taskStorage, this.categotyStorage);
 		this.template = new app.Template();
 		this.view = new app.View(this.template);
 		this.controller = new app.Controller(this.model, this.view);
