@@ -19,12 +19,29 @@
 	 * @param {string} [title] The title of the task
 	 * @param {function} [callback] The callback to fire after the model is created
 	 */
-	 Model.prototype.create = function (title, callback) {
-		title = title || '';
+	 Model.prototype.create = function (title, category, callback) {
+		var self = this;
+
+		title = title ? title.trim() : '';
+		category = category ? category.trim() : '';
 		callback = callback || function () {};
 
+		var newCategory = { category };
+		var categoryId;
+
+		self.categoryStorage.find(newCategory, function (data) {
+			if (!data.length) {
+				self.categoryStorage.save(newCategory, function (data) {
+					categoryId = data[0].id;
+				});
+			} else {
+				categoryId = data[0].id;
+			}	
+		});
+
 		var newItem = {
-			title: title.trim(),
+			title,
+			categoryId,
 			completed: false
 		};
 
