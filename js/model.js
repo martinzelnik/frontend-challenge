@@ -97,7 +97,17 @@
 	 * @param {function} callback The callback to fire when the removal is complete.
 	 */
 	Model.prototype.remove = function (id, callback) {
-		this.taskStorage.remove(id, callback);
+		var self = this;
+
+		self.taskStorage.findById(id, function(task) {
+			var categoryId = task.categoryId;
+			self.taskStorage.find({ categoryId }, function (data) {
+				if (data.length < 2) {
+					self.categoryStorage.remove(categoryId);
+				}	
+			});
+		})
+		self.taskStorage.remove(id, callback);
 	};
 
 	/**
