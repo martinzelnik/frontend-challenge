@@ -32,9 +32,10 @@
 	function Template() {
 		this.defaultTemplate
 		=	'<li data-id="{{id}}" class="{{completed}}">'
-		+		'<div class="view">'
+		+		'<div class="view container">'
 		+			'<input class="toggle" type="checkbox" {{checked}}>'
 		+			'<label>{{title}}</label>'
+		+			'<label class="category-label">{{category}}</label>'
 		+			'<button class="destroy"></button>'
 		+		'</div>'
 		+	'</li>';
@@ -73,6 +74,7 @@
 
 			template = template.replace('{{id}}', data[i].id);
 			template = template.replace('{{title}}', escape(data[i].title));
+			template = template.replace('{{category}}', escape(data[i].category));
 			template = template.replace('{{completed}}', completed);
 			template = template.replace('{{checked}}', checked);
 
