@@ -25,6 +25,7 @@
 		this.$footer = qs('.footer');
 		this.$toggleAll = qs('.toggle-all');
 		this.$newTodo = qs('.new-todo');
+		this.$category = qs('.category');
 	}
 
 	View.prototype._removeItem = function (id) {
@@ -118,6 +119,7 @@
 			},
 			clearNewTodo: function () {
 				self.$newTodo.value = '';
+				self.$category.value = '';
 			},
 			elementComplete: function () {
 				self._elementComplete(parameter.id, parameter.completed);
@@ -174,7 +176,11 @@
 		var self = this;
 		if (event === 'newTodo') {
 			$on(self.$newTodo, 'change', function () {
-				handler(self.$newTodo.value);
+				handler(self.$newTodo.value, self.$category.value);
+			});
+
+			$on(self.$category, 'change', function () {
+				handler(self.$newTodo.value, self.$category.value);
 			});
 
 		} else if (event === 'removeCompleted') {
