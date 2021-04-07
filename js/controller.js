@@ -110,8 +110,8 @@
 	 */
 	Controller.prototype.editItem = function (id) {
 		var self = this;
-		self.model.read(id, function (data) {
-			self.view.render('editItem', {id: id, title: data[0].title});
+		self.model.read(id, function (item) {
+			self.view.render('editItem', {id: id, title: item.title});
 		});
 	};
 
