@@ -120,6 +120,7 @@
 			clearNewTodo: function () {
 				self.$newTodo.value = '';
 				self.$category.value = '';
+				self.$newTodo.focus();
 			},
 			elementComplete: function () {
 				self._elementComplete(parameter.id, parameter.completed);
