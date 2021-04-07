@@ -55,6 +55,26 @@
 	};
 
 	/**
+	 * Finds item based on an unique id
+	 *
+	 * @param {object} id The unique id
+	 * @param {function} callback The callback to fire when the query has
+	 * completed running
+	 *
+	 */
+	 Store.prototype.findById = function (id, callback) {
+		if (!callback) {
+			return;
+		}
+
+		var items = JSON.parse(localStorage.getItem(this._dbName));
+
+		callback.call(this, items.find(function (item) {
+			return item.id == id;
+		}));
+	};
+
+	/**
 	 * Will retrieve all data from the collection
 	 *
 	 * @param {function} callback The callback to fire upon retrieving data
@@ -104,10 +124,12 @@
 	 * Will remove an item from the Store based on its ID
 	 *
 	 * @param {number} id The ID of the item you want to remove
-	 * @param {function} callback The callback to fire after saving
+	 * @param {function} callback The callback to fire after removal
 	 */
 	Store.prototype.remove = function (id, callback) {
 		var items = JSON.parse(localStorage.getItem(this._dbName));
+
+		callback = callback || function() {};
 
 		for (var i = 0; i < items.length; i++) {
 			if (items[i].id == id) {
