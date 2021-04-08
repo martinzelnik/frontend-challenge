@@ -19,14 +19,14 @@
 	 * @param {string} [title] The title of the task
 	 * @param {function} [callback] The callback to fire after the model is created
 	 */
-	 Model.prototype.create = function (title, category, callback) {
+	 Model.prototype.create = function (title, categoryName, callback) {
 		var self = this;
 
 		title = title ? title.trim() : '';
-		category = category ? category.trim() : '';
+		categoryName = categoryName ? categoryName.trim() : '';
 		callback = callback || function () {};
 
-		var newCategory = { category };
+		var newCategory = { name: categoryName };
 		var categoryId;
 
 		self.categoryStorage.find(newCategory, function (data) {
@@ -39,13 +39,13 @@
 			}	
 		});
 
-		var newItem = {
+		var newTask = {
 			title,
 			categoryId,
 			completed: false
 		};
 
-		self.taskStorage.save(newItem, callback);
+		self.taskStorage.save(newTask, callback);
 	};
 
 	/**
@@ -64,17 +64,39 @@
 	 * model.read({ foo: 'bar', hello: 'world' });
 	 */
 	Model.prototype.read = function (query, callback) {
+		var self = this;
+
 		var queryType = typeof query;
 		callback = callback || function () {};
 
 		if (queryType === 'function') {
 			callback = query;
-			return this.taskStorage.findAll(callback);
+			self.taskStorage.findAll(function (tasks) {
+				self.categoryStorage.findAll(function (categories) {
+					var caregoryMap = new Map();
+					categories.forEach(category => caregoryMap.set(category.id, category.name));
+					var data = tasks.map(task => {
+						return {
+							...task,
+							categoryName: caregoryMap.get(task.categoryId)
+						}
+					})
+					callback.call(this, data);
+				})
+			})
 		} else if (queryType === 'string' || queryType === 'number') {
 			query = parseInt(query, 10);
-			this.taskStorage.find({ id: query }, callback);
+			self.taskStorage.findById(query, function (task) {
+				self.categoryStorage.findById(task.categoryId, function (category) {
+					var data = {
+						...task,
+						categorName: category.name
+					};
+					callback.call(this, data);
+				})
+			});
 		} else {
-			this.taskStorage.find(query, callback);
+			self.taskStorage.find(query, callback);
 		}
 	};
 
