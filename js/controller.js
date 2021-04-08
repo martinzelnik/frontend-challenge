@@ -22,7 +22,7 @@
 		});
 
 		self.view.bind('itemEditDone', function (item) {
-			self.editItemSave(item.id, item.title);
+			self.editItemSave(item.id, item.title, item.categoryName);
 		});
 
 		self.view.bind('itemEditCancel', function (item) {
@@ -111,20 +111,22 @@
 	Controller.prototype.editItem = function (id) {
 		var self = this;
 		self.model.read(id, function (item) {
-			self.view.render('editItem', {id: id, title: item.title});
+			var { title, categoryName } = item;
+			self.view.render('editItem', { id, title, categoryName });
 		});
 	};
 
 	/*
 	 * Finishes the item editing mode successfully.
 	 */
-	Controller.prototype.editItemSave = function (id, title) {
+	Controller.prototype.editItemSave = function (id, title, categoryName) {
 		var self = this;
 		title = title.trim();
+		categoryName = categoryName.trim();
 
 		if (title.length !== 0) {
-			self.model.update(id, {title: title}, function () {
-				self.view.render('editItemDone', {id: id, title: title});
+			self.model.update(id, { title, categoryName }, function () {
+				self.view.render('editItemDone', { id, title, categoryName });
 			});
 		} else {
 			self.removeItem(id);
@@ -137,7 +139,7 @@
 	Controller.prototype.editItemCancel = function (id) {
 		var self = this;
 		self.model.read(id, function (data) {
-			self.view.render('editItemDone', {id: id, title: data[0].title});
+			self.view.render('editItemDone', {id: id, title: data.title});
 		});
 	};
 

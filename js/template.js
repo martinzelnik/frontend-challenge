@@ -34,8 +34,8 @@
 		=	'<li data-id="{{id}}" class="{{completed}}">'
 		+		'<div class="view container">'
 		+			'<input class="toggle" type="checkbox" {{checked}}>'
-		+			'<label>{{title}}</label>'
-		+			'<label class="category-label">{{category}}</label>'
+		+			'<label class="task-label">{{title}}</label>'
+		+			'<label class="category-label">{{categoryName}}</label>'
 		+			'<button class="destroy"></button>'
 		+		'</div>'
 		+	'</li>';
@@ -74,7 +74,7 @@
 
 			template = template.replace('{{id}}', data[i].id);
 			template = template.replace('{{title}}', escape(data[i].title));
-			template = template.replace('{{category}}', escape(data[i].categoryName));
+			template = template.replace('{{categoryName}}', escape(data[i].categoryName));
 			template = template.replace('{{completed}}', completed);
 			template = template.replace('{{checked}}', checked);
 

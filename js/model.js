@@ -26,18 +26,7 @@
 		categoryName = categoryName ? categoryName.trim() : '';
 		callback = callback || function () {};
 
-		var newCategory = { name: categoryName };
-		var categoryId;
-
-		self.categoryStorage.find(newCategory, function (data) {
-			if (!data.length) {
-				self.categoryStorage.save(newCategory, function (data) {
-					categoryId = data[0].id;
-				});
-			} else {
-				categoryId = data[0].id;
-			}	
-		});
+		var categoryId = this._getCategoryIdByName(categoryName);
 
 		var newTask = {
 			title,
@@ -109,7 +98,20 @@
 	 * @param {function} callback The callback to fire when the update is complete.
 	 */
 	Model.prototype.update = function (id, data, callback) {
-		this.taskStorage.save(data, callback, id);
+		var self = this;
+
+		if ('categoryName' in data) {
+			var { categoryName, ...data } = data;
+
+			var categoryId = this._getCategoryIdByName(categoryName);
+
+			this._dereferenceCategory(id);
+
+			data.categoryId = categoryId;
+			this.taskStorage.save(data, callback, id);
+		} else {
+			this.taskStorage.save(data, callback, id);
+		}
 	};
 
 	/**
@@ -121,14 +123,7 @@
 	Model.prototype.remove = function (id, callback) {
 		var self = this;
 
-		self.taskStorage.findById(id, function(task) {
-			var categoryId = task.categoryId;
-			self.taskStorage.find({ categoryId }, function (data) {
-				if (data.length < 2) {
-					self.categoryStorage.remove(categoryId);
-				}	
-			});
-		})
+		this._dereferenceCategory(id);
 		self.taskStorage.remove(id, callback);
 	};
 
@@ -138,7 +133,9 @@
 	 * @param {function} callback The callback to fire when the storage is wiped.
 	 */
 	Model.prototype.removeAll = function (callback) {
-		this.taskStorage.drop(callback);
+		this.categoryStorage.drop();
+		this.taskStorage.drop();
+		callback.call(this, []);
 	};
 
 	/**
@@ -164,6 +161,50 @@
 			callback(todos);
 		});
 	};
+
+	/**
+	 * Returns a category Id assigned to a particular category name. If such a name doesn't exists,
+	 * a new record with the name is created and its id is returned instead.
+	 *
+	 * @param {string} categoryName 
+	 */
+	 Model.prototype._getCategoryIdByName = function (categoryName) {
+		var self = this;
+
+		var categoryId
+		self.categoryStorage.find({ name: categoryName }, function(data) {
+			if (!data.length) {
+				self.categoryStorage.save({ name: categoryName }, function(data) {
+					categoryId = data[0].id;
+				});
+			} else {
+				categoryId = data[0].id;
+			}
+		})
+
+		return categoryId;
+	}
+
+	/**
+	 * Dereferences a category that is linked to a task by nullifying categoryId (FK). In case the category is not referencing to 
+	 * any other task, it is removed from the category storage as well.
+	 *
+	 * @param {number} taskId 
+	 */
+	Model.prototype._dereferenceCategory = function (taskId) {
+		var self = this;
+
+		self.taskStorage.findById(taskId, function(task) {
+			var categoryId = task.categoryId;
+			task.categoryId = null;
+			self.taskStorage.save(task, null, taskId);
+			self.taskStorage.find({ categoryId }, function(data) {
+				if (data.length < 2) {
+					self.categoryStorage.remove(categoryId);
+				}	
+			});
+		})
+	}
 
 	// Export to window
 	window.app = window.app || {};

@@ -2,14 +2,11 @@ body {
     max-width: 800px;
 }
 
-.container {
+.container,
+.container-edit {
     display: flex;
     align-items: baseline;
 }
-
-/* .container > * {
-    flex: 1;
-} */
 
 .new-todo { 
     box-shadow: inset 0px 0px 1px 1px rgb(0 0 0 / 11%);

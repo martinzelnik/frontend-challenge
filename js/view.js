@@ -59,7 +59,7 @@
 		qs('input', listItem).checked = completed;
 	};
 
-	View.prototype._editItem = function (id, title) {
+	View.prototype._editItem = function (id, title, categoryName) {
 		var listItem = qs('[data-id="' + id + '"]');
 
 		if (!listItem) {
@@ -68,28 +68,46 @@
 
 		listItem.className = listItem.className + ' editing';
 
-		var input = document.createElement('input');
-		input.className = 'edit';
+		var editContainerDiv = document.createElement('div');
 
-		listItem.appendChild(input);
-		input.focus();
-		input.value = title;
+		editContainerDiv.className = 'container-edit';
+
+		var taskInput = document.createElement('input');
+		var categoryInput = document.createElement('input');
+
+		taskInput.className = 'edit task-edit';
+		categoryInput.className = 'edit category-edit';
+
+		editContainerDiv.appendChild(taskInput);
+		editContainerDiv.appendChild(categoryInput);
+
+		listItem.appendChild(editContainerDiv);
+
+		taskInput.focus();
+
+		taskInput.value = title;
+		categoryInput.value = categoryName;
 	};
 
-	View.prototype._editItemDone = function (id, title) {
+	View.prototype._editItemDone = function (id, title, categoryName) {
 		var listItem = qs('[data-id="' + id + '"]');
 
 		if (!listItem) {
 			return;
 		}
 
-		var input = qs('input.edit', listItem);
-		listItem.removeChild(input);
+		var editContainerDiv = qs('div.container-edit', listItem);
+
+		listItem.removeChild(editContainerDiv);
 
 		listItem.className = listItem.className.replace('editing', '');
 
-		qsa('label', listItem).forEach(function (label) {
+		qsa('label.task-label', listItem).forEach(function (label) {
 			label.textContent = title;
+		});
+
+		qsa('label.category-label', listItem).forEach(function (label) {
+			label.textContent = categoryName;
 		});
 	};
 
@@ -126,10 +144,10 @@
 				self._elementComplete(parameter.id, parameter.completed);
 			},
 			editItem: function () {
-				self._editItem(parameter.id, parameter.title);
+				self._editItem(parameter.id, parameter.title, parameter.categoryName);
 			},
 			editItemDone: function () {
-				self._editItemDone(parameter.id, parameter.title);
+				self._editItemDone(parameter.id, parameter.title, parameter.categoryName);
 			}
 		};
 
@@ -141,21 +159,30 @@
 		return parseInt(li.dataset.id, 10);
 	};
 
+	View.prototype._title = function (element) {
+		var containerDiv = $parent(element, 'div');
+		var taskInput = qs('input.task-edit', containerDiv);
+		return taskInput.value;
+	};
+
+	View.prototype._categoryName = function (element) {
+		var containerDiv = $parent(element, 'div');
+		var categoryInput = qs('input.category-edit', containerDiv);
+		return categoryInput.value;
+	};
+
 	View.prototype._bindItemEditDone = function (handler) {
 		var self = this;
-		$delegate(self.$todoList, 'li .edit', 'blur', function () {
-			if (!this.dataset.iscanceled) {
-				handler({
-					id: self._itemId(this),
-					title: this.value
-				});
-			}
-		});
 
 		$delegate(self.$todoList, 'li .edit', 'keypress', function (event) {
 			if (event.keyCode === self.ENTER_KEY) {
 				// Remove the cursor from the input when you hit enter just like if it
 				// were a real form
+			  	handler({
+					id: self._itemId(this),
+					title: self._title(this),
+					categoryName: self._categoryName(this)
+				});
 				this.blur();
 			}
 		});
@@ -171,6 +198,15 @@
 				handler({id: self._itemId(this)});
 			}
 		});
+
+		// $delegate(self.$todoList, 'li .edit', 'blur', function () {
+		// 	if (!this.dataset.iscanceled) {
+		// 		handler({
+		// 			id: self._itemId(this),
+		// 			title: this.value
+		// 		});
+		// 	}
+		// });
 	};
 
 	View.prototype.bind = function (event, handler) {
