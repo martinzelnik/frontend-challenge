@@ -103,11 +103,21 @@
 		if ('categoryName' in data) {
 			var { categoryName, ...data } = data;
 
-			var categoryId = this._getCategoryIdByName(categoryName);
+			var newCategoryId = this._getCategoryIdByName(categoryName);
 
-			this._dereferenceCategory(id);
+			self.taskStorage.findById(id, function(task) {
+				var prevCategoryId = task.categoryId;
+				if (newCategoryId !== prevCategoryId) {
+					self.taskStorage.find({ categoryId: prevCategoryId }, function(data) {
+						if (data.length <= 1) {
+							self.categoryStorage.remove(prevCategoryId);
+						}	
+					});
 
-			data.categoryId = categoryId;
+					data.categoryId = newCategoryId;
+				}
+			})
+			
 			this.taskStorage.save(data, callback, id);
 		} else {
 			this.taskStorage.save(data, callback, id);
@@ -123,7 +133,14 @@
 	Model.prototype.remove = function (id, callback) {
 		var self = this;
 
-		this._dereferenceCategory(id);
+		self.taskStorage.findById(id, function(task) {
+			var categoryId = task.categoryId;
+			self.taskStorage.find({ categoryId }, function(data) {
+				if (data.length <= 1) {
+					self.categoryStorage.remove(categoryId);
+				}	
+			});
+		})
 		self.taskStorage.remove(id, callback);
 	};
 
@@ -183,27 +200,6 @@
 		})
 
 		return categoryId;
-	}
-
-	/**
-	 * Dereferences a category that is linked to a task by nullifying categoryId (FK). In case the category is not referencing to 
-	 * any other task, it is removed from the category storage as well.
-	 *
-	 * @param {number} taskId 
-	 */
-	Model.prototype._dereferenceCategory = function (taskId) {
-		var self = this;
-
-		self.taskStorage.findById(taskId, function(task) {
-			var categoryId = task.categoryId;
-			task.categoryId = null;
-			self.taskStorage.save(task, null, taskId);
-			self.taskStorage.find({ categoryId }, function(data) {
-				if (data.length < 2) {
-					self.categoryStorage.remove(categoryId);
-				}	
-			});
-		})
 	}
 
 	// Export to window
