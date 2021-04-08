@@ -60,6 +60,15 @@
 	};
 
 	View.prototype._editItem = function (id, title, categoryName) {
+		var editedListItem = qs('.editing');
+
+		if (editedListItem) {
+			var editedId = editedListItem.attributes['data-id'].nodeValue;
+			var editedTaskInput = qs('input.task-edit', editedListItem);
+			var editedCategoryInput = qs('input.category-edit', editedListItem);
+			this._editItemDone(editedId, editedTaskInput.value, editedCategoryInput.value);
+		}
+
 		var listItem = qs('[data-id="' + id + '"]');
 
 		if (!listItem) {
@@ -176,6 +185,7 @@
 
 		$delegate(self.$todoList, 'li .edit', 'keypress', function (event) {
 			if (event.keyCode === self.ENTER_KEY) {
+				this.dataset.iscanceled = false;
 				// Remove the cursor from the input when you hit enter just like if it
 				// were a real form
 			  	handler({
@@ -198,14 +208,11 @@
 			}
 		});
 
-		// $delegate(self.$todoList, 'li .edit', 'blur', function () {
-		// 	if (!this.dataset.iscanceled) {
-		// 		handler({
-		// 			id: self._itemId(this),
-		// 			title: this.value
-		// 		});
-		// 	}
-		// });
+		$delegate(self.$todoList, 'li .edit', 'blur', function () {
+			if (this.dataset.iscanceled) {
+				handler({id: self._itemId(this)});
+			}
+		});
 	};
 
 	View.prototype.bind = function (event, handler) {
