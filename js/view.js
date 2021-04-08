@@ -183,7 +183,6 @@
 					title: self._title(this),
 					categoryName: self._categoryName(this)
 				});
-				this.blur();
 			}
 		});
 	};
