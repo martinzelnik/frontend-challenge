@@ -90,7 +90,7 @@
 				self.categoryStorage.findById(task.categoryId, function (category) {
 					var data = {
 						...task,
-						categorName: category.name
+						categoryName: category.name
 					};
 					callback.call(this, data);
 				})
