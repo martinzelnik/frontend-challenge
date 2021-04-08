@@ -139,7 +139,7 @@
 	Controller.prototype.editItemCancel = function (id) {
 		var self = this;
 		self.model.read(id, function (data) {
-			self.view.render('editItemDone', {id: id, title: data.title});
+			self.view.render('editItemDone', {id: id, title: data.title, categoryName: data.categoryName });
 		});
 	};
 
