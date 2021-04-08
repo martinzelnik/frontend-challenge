@@ -207,12 +207,6 @@
 				handler({id: self._itemId(this)});
 			}
 		});
-
-		$delegate(self.$todoList, 'li .edit', 'blur', function () {
-			if (this.dataset.iscanceled) {
-				handler({id: self._itemId(this)});
-			}
-		});
 	};
 
 	View.prototype.bind = function (event, handler) {
