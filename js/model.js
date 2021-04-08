@@ -61,17 +61,7 @@
 		if (queryType === 'function') {
 			callback = query;
 			self.taskStorage.findAll(function (tasks) {
-				self.categoryStorage.findAll(function (categories) {
-					var caregoryMap = new Map();
-					categories.forEach(category => caregoryMap.set(category.id, category.name));
-					var data = tasks.map(task => {
-						return {
-							...task,
-							categoryName: caregoryMap.get(task.categoryId)
-						}
-					})
-					callback.call(this, data);
-				})
+				self._joinCategories(tasks, callback);
 			})
 		} else if (queryType === 'string' || queryType === 'number') {
 			query = parseInt(query, 10);
@@ -85,7 +75,9 @@
 				})
 			});
 		} else {
-			self.taskStorage.find(query, callback);
+			self.taskStorage.find(query, function (tasks) {
+				self._joinCategories(tasks, callback);
+			});
 		}
 	};
 
@@ -200,6 +192,22 @@
 		})
 
 		return categoryId;
+	}
+
+	Model.prototype._joinCategories = function (tasks, callback) {
+		var self = this;
+
+		self.categoryStorage.findAll(function (categories) {
+			var caregoryMap = new Map();
+			categories.forEach(category => caregoryMap.set(category.id, category.name));
+			var data = tasks.map(task => {
+				return {
+					...task,
+					categoryName: caregoryMap.get(task.categoryId)
+				}
+			})
+			callback.call(this, data);
+		})
 	}
 
 	// Export to window
